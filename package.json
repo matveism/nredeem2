@@ -1,0 +1,12 @@
+{
+  "name": "rewards-website",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "pg": "^8.12.0"
+  }
+}
