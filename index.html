@@ -14,74 +14,21 @@
       color: #f0f4ff;
       min-height: 100vh;
     }
-    .top-bar {
-      background: #1a2b55;
-      padding: 12px 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .mini-login {
-      background: #14244a;
-      padding: 12px 15px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      border-bottom: 1px solid #2d4480;
-    }
+    .top-bar { background: #1a2b55; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .mini-login { background: #14244a; padding: 12px 15px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-bottom: 1px solid #2d4480; }
     .logged-in .login-form { display: none !important; }
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8);
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 1000; }
     .modal.active { display: flex; }
-    .modal-content {
-      background: #1a2b55;
-      padding: 30px;
-      border-radius: 16px;
-      width: 90%;
-      max-width: 420px;
-      text-align: center;
-      border: 1px solid #3b5a8a;
-    }
-    input, button {
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-    button {
-      background: #4a7ae0;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    .notif-badge {
-      background: #e74c3c;
-      color: white;
-      border-radius: 50%;
-      padding: 2px 8px;
-      font-size: 12px;
-    }
+    .modal-content { background: #1a2b55; padding: 30px; border-radius: 16px; width: 90%; max-width: 420px; text-align: center; border: 1px solid #3b5a8a; }
+    input, button { padding: 12px; margin: 8px 0; border-radius: 8px; font-size: 16px; }
+    button { background: #4a7ae0; color: white; border: none; cursor: pointer; }
   </style>
 </head>
 <body>
 
   <div class="top-bar">
     <div><strong>REWARDS HUB</strong></div>
-    <div>
-      On Hold: <strong id="holdPts">0</strong> PTS | 
-      Balance: <strong id="balancePts">0</strong> PTS
-    </div>
+    <div>On Hold: <strong id="holdPts">0</strong> PTS | Balance: <strong id="balancePts">0</strong> PTS</div>
   </div>
 
   <div class="mini-login" id="miniLoginArea">
@@ -95,12 +42,9 @@
   </div>
 
   <div style="padding: 20px;">
-    <button id="redeemBtn" style="padding: 14px 28px; font-size: 16px;">
-      🎟️ Redeem Code
-    </button>
+    <button id="redeemBtn" style="padding: 14px 28px; font-size: 16px;">🎟️ Redeem Code</button>
   </div>
 
-  <!-- Redeem Modal -->
   <div class="modal" id="redeemModal">
     <div class="modal-content">
       <h2>Redeem Your Code</h2>
@@ -111,15 +55,14 @@
   </div>
 
   <script>
-    // ←←← CHANGE THIS URL AFTER VERCEL DEPLOYMENT ←←←
-    const API_URL = "https://redeem2.vercel.app/";
+    // IMPORTANT: Update this URL with your actual Vercel domain (without trailing slash)
+    const API_URL = "https://redeem2.vercel.app";
 
     let currentUserId = null;
 
     async function login() {
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value.trim();
-
       if (!username || !password) return alert("Please enter username and password");
 
       try {
@@ -141,7 +84,7 @@
           alert(data.message || "Login failed");
         }
       } catch (err) {
-        alert("Cannot connect to server. Check API_URL");
+        alert("Cannot connect to server.\n\nMake sure:\n1. You deployed on Vercel\n2. API_URL is correct\n3. api folder exists");
       }
     }
 
@@ -171,14 +114,9 @@
       }
     }
 
-    // Event Listeners
     document.getElementById('loginBtn').addEventListener('click', login);
-    document.getElementById('redeemBtn').addEventListener('click', () => {
-      document.getElementById('redeemModal').classList.add('active');
-    });
-    document.getElementById('closeModal').addEventListener('click', () => {
-      document.getElementById('redeemModal').classList.remove('active');
-    });
+    document.getElementById('redeemBtn').addEventListener('click', () => document.getElementById('redeemModal').classList.add('active'));
+    document.getElementById('closeModal').addEventListener('click', () => document.getElementById('redeemModal').classList.remove('active'));
     document.getElementById('submitCode').addEventListener('click', redeemCode);
     document.getElementById('logoutBtn').addEventListener('click', () => location.reload());
   </script>
