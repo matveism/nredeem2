@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rewards · Redeem & Notifications</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0d1a33;
+      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%233b5998' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+      color: #f0f4ff;
+      min-height: 100vh;
+    }
+    .top-bar {
+      background: #1a2b55;
+      padding: 12px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .mini-login {
+      background: #14244a;
+      padding: 12px 15px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      border-bottom: 1px solid #2d4480;
+    }
+    .logged-in .login-form { display: none !important; }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: #1a2b55;
+      padding: 30px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 420px;
+      text-align: center;
+      border: 1px solid #3b5a8a;
+    }
+    input, button {
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      background: #4a7ae0;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .notif-badge {
+      background: #e74c3c;
+      color: white;
+      border-radius: 50%;
+      padding: 2px 8px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div><strong>REWARDS HUB</strong></div>
+    <div>
+      On Hold: <strong id="holdPts">0</strong> PTS | 
+      Balance: <strong id="balancePts">0</strong> PTS
+    </div>
+  </div>
+
+  <div class="mini-login" id="miniLoginArea">
+    <div class="login-form">
+      <input type="text" id="username" placeholder="Username" value="demo">
+      <input type="password" id="password" placeholder="Password" value="1234">
+      <button id="loginBtn">Login</button>
+    </div>
+    <span id="loginStatus">Not logged in</span>
+    <button id="logoutBtn" class="hidden">Logout</button>
+  </div>
+
+  <div style="padding: 20px;">
+    <button id="redeemBtn" style="padding: 14px 28px; font-size: 16px;">
+      🎟️ Redeem Code
+    </button>
+  </div>
+
+  <!-- Redeem Modal -->
+  <div class="modal" id="redeemModal">
+    <div class="modal-content">
+      <h2>Redeem Your Code</h2>
+      <input type="text" id="codeInput" placeholder="Enter your code here" style="width:100%;">
+      <button id="submitCode" style="width:100%; margin-top:10px;">Submit Code</button>
+      <button id="closeModal" style="background:none; border:1px solid #777; margin-top:10px;">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // ←←← CHANGE THIS URL AFTER VERCEL DEPLOYMENT ←←←
+    const API_URL = "https://your-project-name.vercel.app";
+
+    let currentUserId = null;
+
+    async function login() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!username || !password) return alert("Please enter username and password");
+
+      try {
+        const res = await fetch(`${API_URL}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          currentUserId = data.user.id;
+          document.getElementById('holdPts').textContent = data.user.onhold || 0;
+          document.getElementById('balancePts').textContent = data.user.balance || 0;
+          document.getElementById('loginStatus').innerHTML = `✅ <b>${data.user.username}</b>`;
+          document.getElementById('miniLoginArea').classList.add('logged-in');
+          document.getElementById('logoutBtn').classList.remove('hidden');
+        } else {
+          alert(data.message || "Login failed");
+        }
+      } catch (err) {
+        alert("Cannot connect to server. Check API_URL");
+      }
+    }
+
+    async function redeemCode() {
+      if (!currentUserId) return alert("Please login first!");
+
+      const code = document.getElementById('codeInput').value.trim();
+      if (!code) return alert("Please enter a code");
+
+      try {
+        const res = await fetch(`${API_URL}/api/redeem`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, userId: currentUserId })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          alert(`✅ Success! You received ${data.pts} PTS`);
+          document.getElementById('codeInput').value = '';
+          document.getElementById('redeemModal').classList.remove('active');
+        } else {
+          alert("❌ " + (data.message || "Invalid code"));
+        }
+      } catch (err) {
+        alert("Error connecting to server");
+      }
+    }
+
+    // Event Listeners
+    document.getElementById('loginBtn').addEventListener('click', login);
+    document.getElementById('redeemBtn').addEventListener('click', () => {
+      document.getElementById('redeemModal').classList.add('active');
+    });
+    document.getElementById('closeModal').addEventListener('click', () => {
+      document.getElementById('redeemModal').classList.remove('active');
+    });
+    document.getElementById('submitCode').addEventListener('click', redeemCode);
+    document.getElementById('logoutBtn').addEventListener('click', () => location.reload());
+  </script>
+</body>
+</html>
